@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reveal & Restore | AI Skin Scan</title>
+
+<style>
+
+/* ---------- PAGE ---------- */
+body {
+  margin: 0;
+  background: #FBFBD5;
+  font-family: "Atkinson Hyperlegible", Arial, sans-serif;
+  text-align: center;
+  color: #9BB89D;
+}
+
+/* screens */
+.screen {
+  display: none;
+  padding: 60px;
+  min-height: 100vh;
+}
+
+.active { display: block; }
+
+/* make ONLY result page scrollable */
+#result {
+  overflow-y: auto;
+}
+
+/* ---------- TEXT ---------- */
+h1 {
+  font-family: "Kaushan Script", cursive;
+  color: #F27D87;
+  font-size: 64px; /* bigger */
+  margin-bottom: 20px;
+}
+
+p { font-size: 22px; }
+
+/* ---------- BUTTONS ---------- */
+button {
+  padding: 20px 40px;
+  margin: 16px;
+  border: none;
+  border-radius: 50px;
+  font-size: 22px;
+  background: #F5B4B6;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover { background: #F27D87; }
+
+/* ---------- LOGO ---------- */
+.logo {
+  width: 320px;
+  margin-bottom: 30px;
+}
+
+/* ---------- SCAN BOX ---------- */
+.scan-box {
+  position: relative;
+  width: 600px; /* bigger */
+  margin: auto;
+  padding: 18px;
+  border-radius: 40px;
+  background: linear-gradient(135deg, #FAE6D1, #D8A64A);
+  animation: glow 3s infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 25px rgba(216,166,74,0.5); }
+  to { box-shadow: 0 0 45px rgba(216,166,74,0.9); }
+}
+
+video {
+  width: 100%;
+  border-radius: 30px;
+  background: #D4E9F4;
+}
+
+/* floral watermark */
+.scan-box::after {
+  content: "❀";
+  position: absolute;
+  top: 20px;
+  right: 26px;
+  font-size: 60px;
+  color: rgba(155,184,157,0.35);
+}
+
+/* scan line */
+.scan-line {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 5px;
+  background: #D8A64A;
+  animation: scan 2.5s infinite;
+}
+
+@keyframes scan {
+  0% { top: 12%; }
+  100% { top: 88%; }
+}
+
+/* sparkles */
+.sparkle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #FAE6D1;
+  border-radius: 50%;
+  animation: sparkle 2s infinite ease-in-out;
+}
+
+@keyframes sparkle {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* scan text */
+.loader {
+  margin-top: 25px;
+  font-size: 22px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+/* ---------- RESULT CARD ---------- */
+.card {
+  background: white;
+  padding: 40px;
+  border-radius: 40px;
+  width: 650px; /* bigger */
+  margin: 30px auto;
+  border: 3px solid #FAE6D1;
+  text-align: left;
+  font-size: 22px;
+}
+
+/* ---------- SHOP SECTION ---------- */
+.shop-section {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.shop-section h2 {
+  font-size: 34px;
+  margin-bottom: 10px;
+}
+
+.shop-section p {
+  font-size: 20px;
+  opacity: 0.8;
+}
+
+/* QR code box */
+#qrcode {
+  margin: 30px auto;
+  width: 260px;
+  height: 260px;
+  padding: 20px;
+  background: white;
+  border-radius: 30px;
+  box-shadow: 0 0 35px rgba(216,166,74,0.5);
+
+  /* center QR inside */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* pulse glow animation */
+  animation: qrPulse 2.5s infinite ease-in-out;
+}
+
+/* pulse animation */
+@keyframes qrPulse {
+  0% { box-shadow: 0 0 20px rgba(216,166,74,0.4); }
+  50% { box-shadow: 0 0 50px rgba(216,166,74,0.9); }
+  100% { box-shadow: 0 0 20px rgba(216,166,74,0.4); }
+}
+
+/* scan layout */
+.scan-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 30px;
+}
+
+/* product images on sides */
+.side-product {
+  width: 300px; /* adjust size if needed */
+  height: auto;
+  border-radius: 30px;
+
+  /* floating animation */
+  animation: floatProduct 4s ease-in-out infinite;
+
+  /* smooth hover */
+  transition: transform 0.3s ease;
+}
+
+/* optional hover zoom */
+.side-product:hover {
+  transform: scale(1.05);
+}
+
+/* floating motion */
+@keyframes floatProduct {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-18px); }
+  100% { transform: translateY(0px); }
+}
+
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+</head>
+
+<body>
+
+<!-- START -->
+<div id="start" class="screen active">
+  <img src="logo.png" class="logo">
+  <h1>AI Skin Scan</h1>
+  <p>Personalized skincare & self-care in seconds</p>
+  <button onclick="next('q1')">Begin Scan</button>
+</div>
+
+<!-- QUESTIONS -->
+<div id="q1" class="screen">
+  <h1>Skin Type</h1>
+  <button onclick="setAnswer('type','Dry')">Dry</button>
+  <button onclick="setAnswer('type','Oily')">Oily</button>
+  <button onclick="setAnswer('type','Sensitive')">Sensitive</button>
+</div>
+
+<div id="q2" class="screen">
+  <h1>Main Goal</h1>
+  <button onclick="setAnswer('concern','Acne')">Clear Skin</button>
+  <button onclick="setAnswer('concern','Glow')">Brighten</button>
+  <button onclick="setAnswer('concern','Relax')">Relax</button>
+</div>
+
+<div id="q3" class="screen">
+  <h1>Routine Style</h1>
+  <button onclick="setAnswer('routine','Minimal')">Minimal</button>
+  <button onclick="setAnswer('routine','Full')">Full</button>
+</div>
+
+<!-- SCAN -->
+<div id="scan" class="screen">
+  <h1>Analyzing Your Profile</h1>
+
+  <div class="scan-layout">
+
+    <!-- LEFT PRODUCT -->
+    <img src="Box1.png" class="side-product">
+
+    <!-- CAMERA AREA -->
+    <div class="scan-box">
+      <video id="video" autoplay></video>
+      <div class="scan-line"></div>
+      <div class="sparkle" style="top:25%;left:15%"></div>
+      <div class="sparkle" style="top:70%;left:80%"></div>
+    </div>
+
+    <!-- RIGHT PRODUCT -->
+    <img src="Box2.png" class="side-product">
+
+  </div>
+
+  <div class="loader" id="scanText">Mapping facial zones…</div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="screen">
+  <img src="logo.png" class="logo">
+  <h1>Your Personalized Routine</h1>
+
+  <div class="card" id="resultText"></div>
+
+  <div class="shop-section">
+    <h2>Shop Your Routine</h2>
+    <p>Scan to purchase recommended products</p>
+    <div id="qrcode"></div>
+  </div>
+
+  <button onclick="restart()">New Scan</button>
+</div>
+
+<script>
+let answers = {};
+let cameraStarted = false;
+
+let scanMessages = [
+  "Mapping facial zones…",
+  "Analyzing hydration & texture…",
+  "Selecting ideal products…"
+];
+
+let msgIndex = 0;
+
+function next(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function setAnswer(key, value) {
+  answers[key] = value;
+  if (key === 'type') next('q2');
+  else if (key === 'concern') next('q3');
+  else startScan();
+}
+
+function startScan() {
+  next('scan');
+
+  if (!cameraStarted) {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        document.getElementById('video').srcObject = stream;
+        cameraStarted = true;
+      });
+  }
+
+  let text = document.getElementById('scanText');
+  text.style.opacity = 1;
+
+  setInterval(() => {
+    text.style.opacity = 0;
+    setTimeout(() => {
+      text.innerText = scanMessages[msgIndex % scanMessages.length];
+      text.style.opacity = 1;
+      msgIndex++;
+    }, 600);
+  }, 1600);
+
+  setTimeout(showResult, 6500);
+}
+
+function showResult() {
+  next('result');
+  generateQRCode();
+
+  let scent =
+    answers.concern === "Relax" ? "Lavender" :
+    answers.concern === "Glow" ? "Citrus" :
+    "Vanilla";
+
+  document.getElementById('resultText').innerHTML = `
+  <strong>AM Routine</strong><br>
+  Face Wash<br>
+  Body Lotion (${answers.type})<br>
+  Body Mist (${scent})<br><br>
+
+  <strong>PM Routine</strong><br>
+  Face Mask (${answers.concern === "Acne" ? "Charcoal" : answers.concern === "Glow" ? "Brightening" : "Moisturizing"})<br>
+  Lip Mask (${scent})<br>
+  Body Wash (${scent})<br><br>
+
+  ${answers.routine === "Full" ? `
+  <strong>Self-Care Enhancers</strong><br>
+  Sugar Scrub (${scent})<br>
+  Gua Sha (Rose Quartz)<br>
+  Candle (${scent})<br>
+  Bath Robe<br><br>` : ""}
+
+  <em>Why these products?</em><br>
+  This routine was generated based on your skin type, goals, and routine preference to support hydration, balance, and relaxation using Reveal & Restore products.
+  `;
+}
+
+function generateQRCode() {
+  const container = document.getElementById("qrcode");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  new QRCode(container, {
+    text: "https://christophergaughra.wixsite.com/my-business-site",
+    width: 220,
+    height: 220
+  });
+}
+
+function restart() {
+  answers = {};
+  next('start');
+}
+</script>
+
+</body>
+</html>
